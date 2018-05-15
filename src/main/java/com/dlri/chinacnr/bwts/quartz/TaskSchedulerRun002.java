@@ -45,6 +45,9 @@ public class TaskSchedulerRun002 {
 				List<String>listName=ftpUtil.transferAndDelFiles();
 				for(String fileName:listName){
 					if(protocolService.addRun(fileName, props.getProperty("ftp_run_002.equtype"), props.getProperty("ftp_run_002.equcode"))>0){
+						 WebSocketTest webSocketTest = new WebSocketTest();
+					       // webSocketTest.sendMsg("当前时间:" + new Date());
+					        webSocketTest.sendMsg(protocolService.getMonitorValue());
 						ftpUtil.deleteLocalFile(fileName);
 						System.out.println("TXT文件删除成功: "+fileName);
 					}else{

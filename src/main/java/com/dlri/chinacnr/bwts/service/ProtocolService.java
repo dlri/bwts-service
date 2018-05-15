@@ -20,5 +20,7 @@ public interface ProtocolService {
 	  * equcode:设备编码，如RUN001
 	*/
 	public int addRun(String fileName,String equtype,String equcode);
+	
+	public String getMonitorValue();
 
 }

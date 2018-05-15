@@ -22,6 +22,7 @@ public class ProtocolServiceImpl implements ProtocolService {
 
 	@Autowired
 	ProtocolDao protocolDao;
+	public String monitorValue="";
 	
 	public List<Protocol> getAllList() {
 		return protocolDao.getAllList();
@@ -73,6 +74,7 @@ public class ProtocolServiceImpl implements ProtocolService {
 	 * 以行为单位读取文件，常用于读面向行的格式化文件
 	 */
 	public  String readFileByLines(String fileName,String equtype,String equcode) {
+		monitorValue="";
 		String value = "insert into dyn_RUN001  values(0,"; // insert的值
 		File file = new File(fileName);
 		String txtName=fileName.substring(fileName.lastIndexOf("/") + 1, fileName.length());
@@ -93,8 +95,10 @@ public class ProtocolServiceImpl implements ProtocolService {
 							String[] line1 = element.split("：");
 							if(line1[0].equals("检测时间")){
 								value +="str_to_date('"+line1[1]+"', '%Y%m%d%H%i%s'),"; 
+								monitorValue+="'"+line1[1]+"',";
 							}else{
 								value += "'" + line1[1] + "',";
+								monitorValue+="'"+line1[1]+"',";
 							}
 						}
 					} else if (line > 4) {
@@ -103,10 +107,12 @@ public class ProtocolServiceImpl implements ProtocolService {
 						for (String element : arrayStr) {
 
 							value += "'" + element + "',";
+							monitorValue+="'"+element+"',";
 						}
 						// 合格的数据长度是8，不合格的是9，8的情况要补一列
 						if(arrayStr.length==8){
 							value += "'',";
+							monitorValue+="'',";
 						}
 					}
 					line++;
@@ -116,7 +122,12 @@ public class ProtocolServiceImpl implements ProtocolService {
 				value += "'"+equtype+"',";//添加设备类型
 				value += "'"+equcode+"',";//添加同一类型设备的编码
 				value += "'"+txtName+"' );";//添加文件名称
+				
+				monitorValue += "'"+equtype+"',";//添加设备类型
+				monitorValue += "'"+equcode+"',";//添加同一类型设备的编码
+				monitorValue += "'"+txtName+"'";//添加文件名称
 				System.out.println("value is:===" + value);
+				//monitorValue=value;
 			} catch (IOException e) {
 				e.printStackTrace();
 			} finally {
@@ -129,6 +140,10 @@ public class ProtocolServiceImpl implements ProtocolService {
 			}
 		}
 		return value;
+	}
+	public String getMonitorValue() {
+		
+		return this.monitorValue;
 	}
 	
 }

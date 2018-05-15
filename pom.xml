@@ -21,6 +21,12 @@
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+		    <groupId>javax</groupId>
+		    <artifactId>javaee-api</artifactId>
+		    <version>${javaee.version}</version>
+		    <scope>provided</scope>
+		</dependency>
 		<!-- 添加quartz作业调度框架支持 -->
 		<dependency>
 			<groupId>org.quartz-scheduler</groupId>
@@ -54,6 +60,10 @@
 		<dependency>
 			<groupId>org.mybatis</groupId>
 			<artifactId>mybatis-spring</artifactId>
+		</dependency>
+		<dependency>
+			    <groupId>org.springframework</groupId>
+			    <artifactId>spring-websocket</artifactId>
 		</dependency>
 		<!-- Ganymed SSH-2 for Java实现SSH2协议的包 -->
 		<dependency>
