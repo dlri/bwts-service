@@ -44,7 +44,7 @@ public class TaskSchedulerRun002 {
 				System.out.println(new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()) + "->编号为:"+props.getProperty("ftp_run_002.equcode")+" 跑合台正在运行!");
 				List<String>listName=ftpUtil.transferAndDelFiles();
 				for(String fileName:listName){
-					if(protocolService.addRun(fileName, props.getProperty("ftp_run_002.equtype"), props.getProperty("ftp_run_002.equcode"))>0){
+					if(protocolService.addRun(fileName, props.getProperty("ftp_run_002.equtype"), props.getProperty("ftp_run_002.equcode"),props.getProperty("ftp_run_002.tablename"))>0){
 						 WebSocketTest webSocketTest = new WebSocketTest();
 					       // webSocketTest.sendMsg("当前时间:" + new Date());
 					        webSocketTest.sendMsg(protocolService.getMonitorValue());

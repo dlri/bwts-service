@@ -5,8 +5,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.sql.Date;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
@@ -31,37 +29,46 @@ public class ProtocolServiceImpl implements ProtocolService {
 		
 		return protocolDao.createNewTable(newTableName, originalTableName);
 	}
+	
+	
 	public int createDynamicTable(String tableName) {
-		String sql="id int(11) NOT NULL AUTO_INCREMENT,";
+		String sql="id bigint(11) NOT NULL AUTO_INCREMENT,";
 		List<Protocol> list=protocolDao.getAllList();
-		//list.size()+1,多建立一个字段，方便插入时最后一个，的处理
-		for(int i=0;i<list.size();i++){
-			//创建第4+1列时间字段
-			if(i==4){
-				sql+="test_time datetime,";
-			}else{
-				sql+="col"+(i+1)+" varchar(20) DEFAULT NULL,";
+		for(Protocol pro:list){
+			/*
+			 * 为1时，字符串长度为30;
+			 * 为2时，字符串长度为100；
+			 * 为3时，datetime日期类型；
+			 * 为4时，字符串长度为8。
+			 */
+			if(pro.getFenable().equals("1")){
+				sql+=pro.getFposition()+" varchar(30) DEFAULT NULL COMMENT '"+pro.getFdefines()+"',";
+			}else if(pro.getFenable().equals("2")){
+				sql+=pro.getFposition()+" varchar(100) DEFAULT NULL COMMENT '"+pro.getFdefines()+"',";
+			}else if(pro.getFenable().equals("3")){
+				sql+=pro.getFposition()+" datetime COMMENT '"+pro.getFdefines()+"',";
+			}else if(pro.getFenable().equals("4")){
+				sql+=pro.getFposition()+" varchar(8) DEFAULT 0 COMMENT '"+pro.getFdefines()+"',";
 			}
-			
 		}
-		sql+="col"+(list.size()+1)+" varchar(100) DEFAULT NULL,";
 		sql+=" PRIMARY KEY (id)";
+		System.out.println("创建detection_data检测数据表的sql语句为："+sql);
 		return protocolDao.createDynamicTable(tableName,sql);
 	}
-	
 	 /**
 	  * 从跑合台终端的FTP服务器上生成的TXT文件上传到总服务方法，
 	  * 同时向数据库中插入一条从TXT文档中解析后的数据
 	  * fileName:文件名称
 	  * equtype:设备类型，如run,代表跑合台
 	  * equcode:设备编码，如RUN001
+	  * tablename:表名
 	  */
-	public int addRun(String fileName,String equtype,String equcode) {
+	public int addRun(String fileName,String equtype,String equcode,String tablename) {
 		//String fileName = "G:/2018年工作/1.项目管理/动车组轮对轴承数据传输展示系统/分析过程/三级修/Record/H63-2304_三级_20180303094041.txt";
 		// 获取文件后缀名并转化为写，用于后续比较
 		String fileType = fileName.substring(fileName.lastIndexOf(".") + 1, fileName.length()).toLowerCase();
 		if(fileType.equals("txt")){
-			String sql=readFileByLines(fileName,equtype,equcode);
+			String sql=readFileByLines(fileName,equtype,equcode,tablename);
 			protocolDao.add(sql);
 			return 1;
 		}else{
@@ -71,16 +78,30 @@ public class ProtocolServiceImpl implements ProtocolService {
 	}
 	
 	/**
+	 * 拼接SQL入库语句
 	 * 以行为单位读取文件，常用于读面向行的格式化文件
+	 * fileName:文件名称
+	  * equtype:设备类型，如run,代表跑合台
+	  * equcode:设备编码，如RUN001
+	 * 
 	 */
-	public  String readFileByLines(String fileName,String equtype,String equcode) {
+	public  String readFileByLines(String fileName,String equtype,String equcode,String tablename) {
 		monitorValue="";
-		String value = "insert into dyn_RUN001  values(0,"; // insert的值
+		String value = "insert into "+tablename+"  values(0,"; // insert的值
+		value += "'"+equtype+"',";//添加设备类型
+		value += "'"+equcode+"',";//添加同一类型设备的编码
 		File file = new File(fileName);
 		String txtName=fileName.substring(fileName.lastIndexOf("/") + 1, fileName.length());
 		if (file.isFile() && file.exists()) {
 			BufferedReader reader = null;
 			try {
+				String strName=txtName.substring(0, txtName.length()-4);
+				java.util.Date date = new java.util.Date();
+				String path = new SimpleDateFormat("yyyy/MM/").format(date);
+				value += "'/"+path+"',";//添加路径
+				value += "'"+strName+".pdf',";//添加PDF文件名称
+				value += "'"+strName+".bgm',";//添加PDF文件名称
+				
 				System.out.println("以行为单位读取文件内容，一次读一整行：");
 				InputStreamReader read = new InputStreamReader(new FileInputStream(file), "gbk");
 				reader = new BufferedReader(read);
@@ -119,9 +140,10 @@ public class ProtocolServiceImpl implements ProtocolService {
 				}
 				read.close();
 				reader.close();
-				value += "'"+equtype+"',";//添加设备类型
-				value += "'"+equcode+"',";//添加同一类型设备的编码
-				value += "'"+txtName+"' );";//添加文件名称
+				value =value.substring(0,value.length()-1)+");";
+				//value += "'"+equtype+"',";//添加设备类型
+				//value += "'"+equcode+"',";//添加同一类型设备的编码
+				//value += "'"+txtName+"' );";//添加文件名称
 				
 				monitorValue += "'"+equtype+"',";//添加设备类型
 				monitorValue += "'"+equcode+"',";//添加同一类型设备的编码

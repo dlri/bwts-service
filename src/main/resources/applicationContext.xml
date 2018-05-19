@@ -165,8 +165,8 @@
         <property name="triggers">  
             <list>  
                <!--  <ref bean="cronTrigger_1" />  -->
-               <!--  <ref bean="cronTriggerRun001" /> -->
-                <ref bean="cronTriggerRun002" />  
+               <!--  <ref bean="cronTriggerRun001" /> 
+                <ref bean="cronTriggerRun002" />  -->
                 <ref bean="cronTriggerRun003" />  
             </list>  
         </property>  

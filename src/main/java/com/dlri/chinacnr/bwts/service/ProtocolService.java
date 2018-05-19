@@ -18,9 +18,11 @@ public interface ProtocolService {
 	  * fileName:文件名称
 	  * equtype:设备类型，如run,代表跑合台
 	  * equcode:设备编码，如RUN001
+	  * tablename:表名
 	*/
-	public int addRun(String fileName,String equtype,String equcode);
+	public int addRun(String fileName,String equtype,String equcode,String tablename);
 	
+	//发送首页页面监测的值
 	public String getMonitorValue();
 
 }

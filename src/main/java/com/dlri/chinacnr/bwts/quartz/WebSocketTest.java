@@ -48,12 +48,12 @@ public class WebSocketTest {
     }
    
 	
-    public void sendMsg() {
+   // public void sendMsg() {
     	
-        ScheduledExecutorService newScheduledThreadPool = Executors.newSingleThreadScheduledExecutor();
-        newScheduledThreadPool.scheduleWithFixedDelay(new Monitor(), 20, 5, TimeUnit.SECONDS);
+    //    ScheduledExecutorService newScheduledThreadPool = Executors.newSingleThreadScheduledExecutor();
+    //    newScheduledThreadPool.scheduleWithFixedDelay(new Monitor(), 20, 5, TimeUnit.SECONDS);
 
-    }
+   // }
     /**
      * 连接关闭调用的方法
      */

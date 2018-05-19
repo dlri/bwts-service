@@ -38,7 +38,7 @@ public class TaskSchedulerRun001 {
 					props.getProperty("ftp_run_001.port"), props.getProperty("ftp_run_001.username"), props.getProperty("ftp_run_001.password"));
 			List<String>listName=ftpUtil.transferAndDelFiles();
 			for(String fileName:listName){
-				if(protocolService.addRun(fileName, props.getProperty("ftp_run_001.equtype"), props.getProperty("ftp_run_001.equcode"))>0){
+				if(protocolService.addRun(fileName, props.getProperty("ftp_run_001.equtype"), props.getProperty("ftp_run_001.equcode"),props.getProperty("ftp_run_001.tablename"))>0){
 					ftpUtil.deleteLocalFile(fileName);
 					System.out.println("TXT文件删除成功: "+fileName);
 				}else{
