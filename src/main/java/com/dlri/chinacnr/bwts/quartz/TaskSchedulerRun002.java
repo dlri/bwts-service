@@ -3,7 +3,9 @@ package com.dlri.chinacnr.bwts.quartz;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,13 +14,14 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
 import org.springframework.stereotype.Service;
 
-import com.dlri.chinacnr.bwts.service.ProtocolService;
+import com.dlri.chinacnr.bwts.manager.Util;
+import com.dlri.chinacnr.bwts.service.DetectionRecordService;
 
 @Service("taskSchedulerRun002")
 public class TaskSchedulerRun002 {
 
 	@Autowired
-	ProtocolService protocolService;
+	DetectionRecordService detectionRecordService;
 	private Properties props;
 
 	public TaskSchedulerRun002() {
@@ -41,20 +44,29 @@ public class TaskSchedulerRun002 {
 		boolean isConnected;
 			isConnected = ftpUtil.connectServer(props.getProperty("ftp_run_002.ip"), props.getProperty("ftp_run_002.port"), props.getProperty("ftp_run_002.username"), props.getProperty("ftp_run_002.password"), props.getProperty("ftp_run_path.defaultPath"));
 			if(isConnected==true){
-				System.out.println(new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()) + "->编号为:"+props.getProperty("ftp_run_002.equcode")+" 跑合台正在运行!");
-				List<String>listName=ftpUtil.transferAndDelFiles();
-				for(String fileName:listName){
-					if(protocolService.addRun(fileName, props.getProperty("ftp_run_002.equtype"), props.getProperty("ftp_run_002.equcode"),props.getProperty("ftp_run_002.tablename"))>0){
-						 WebSocketTest webSocketTest = new WebSocketTest();
-					       // webSocketTest.sendMsg("当前时间:" + new Date());
-					        webSocketTest.sendMsg(protocolService.getMonitorValue());
+				//在线值为1
+				Util.map.put(props.getProperty("ftp_run_002.equcode"),"1");
+				System.out.println(new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()) + "->编号为:"
+						+ props.getProperty("ftp_run_002.equcode") + " 跑合台正在运行!");
+				List<String> listName = ftpUtil.transferAndDelFiles();
+				System.out.println("======TaskSchedulerRun002====listName.size========="+listName.size());
+				for (String fileName : listName) {
+					Map<String,Object>map=new HashMap<String,Object>();
+					map.put("fileName", fileName);
+					map.put("equType", props.getProperty("ftp_run_002.equtype"));
+					map.put("equCode", props.getProperty("ftp_run_002.equcode"));
+					if (detectionRecordService.insertCallProcedureRecord(map) > 0) {
+						WebSocketTest webSocketTest = new WebSocketTest();
+						//首页实时推送数据
+						webSocketTest.sendMsg(detectionRecordService.getMonitorValue());
 						ftpUtil.deleteLocalFile(fileName);
-						System.out.println("TXT文件删除成功: "+fileName);
-					}else{
-						System.out.println(fileName+" TXT文件删除不成功: ");
+						System.out.println("TXT文件删除成功: " + fileName);
+					} else {
+						System.out.println(fileName + " TXT文件删除不成功: ");
 					}
 				}
 			}else{
+				Util.map.put(props.getProperty("ftp_run_002.equcode"),"0");
 				System.out.println(new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()) + "->编号为:"+props.getProperty("ftp_run_002.equcode")+" 跑合台不在线!");
 			}
 		

@@ -13,9 +13,7 @@ import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 
-import com.dlri.chinacnr.bwts.service.ProtocolService;
-import com.dlri.chinacnr.bwts.service.impl.ProtocolServiceImpl;
-
+import com.dlri.chinacnr.bwts.manager.Util;
 
 /**
  * @ServerEndpoint 注解是一个类层次的注解，它的功能主要是将目前的类定义成一个websocket服务器端,
@@ -44,16 +42,16 @@ public class WebSocketTest {
         webSocketSet.add(this);     //加入set中
         addOnlineCount();           //在线数加1
         System.out.println("有新连接加入！当前在线人数为" + getOnlineCount());
-        //sendMsg();
+       // sendMsg2();
     }
    
 	
-   // public void sendMsg() {
-    	
-    //    ScheduledExecutorService newScheduledThreadPool = Executors.newSingleThreadScheduledExecutor();
-    //    newScheduledThreadPool.scheduleWithFixedDelay(new Monitor(), 20, 5, TimeUnit.SECONDS);
+    public void sendMsg2() {
+    	Util util=Util.getInstance();
+        ScheduledExecutorService newScheduledThreadPool = Executors.newSingleThreadScheduledExecutor();
+        newScheduledThreadPool.scheduleWithFixedDelay(new Monitor(), 10, 10, TimeUnit.SECONDS);
 
-   // }
+    }
     /**
      * 连接关闭调用的方法
      */

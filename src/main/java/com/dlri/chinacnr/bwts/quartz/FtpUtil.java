@@ -1,11 +1,8 @@
 package com.dlri.chinacnr.bwts.quartz;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.SocketException;
 import java.text.ParseException;
@@ -20,13 +17,14 @@ import org.apache.commons.net.ftp.FTPReply;
 
 /**
  * @describe 读取FTP上的文件
- * @auto li.wang
- * @date 2013-11-18 下午4:07:34
+ * @auto chuang chen
+ * @date 2018-5-22 上午9:16:34
  */
 public class FtpUtil {
 
 	private FTPClient ftpClient = null;
 	private String localPath = null; // 读取文件的存放目录
+	private List<String> nameList;
 
 	public FtpUtil() {
 
@@ -39,7 +37,7 @@ public class FtpUtil {
 	 * @param userPwd
 	 * @throws SocketException
 	 * @throws IOException
-	 *             function:连接到服务器
+	 * function:连接到服务器
 	 */
 	public FtpUtil(String localPath, String ip, String port, String userName, String userPwd) {
 		// this.localPath=localPath;
@@ -138,6 +136,19 @@ public class FtpUtil {
 	}
 
 	/**
+	 * @param fileName
+	 *            function:删除文件夹
+	 */
+	public void removeDirectory(String fileName) {
+		try {
+			ftpClient.removeDirectory(new String(fileName.getBytes("GBK"), "iso-8859-1"));
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
 	 * 传输文件到集中的服务上后并删除原FTP服务器中的文件
 	 * 
 	 * @param str
@@ -146,84 +157,55 @@ public class FtpUtil {
 	 * @throws IOException
 	 */
 	public List<String> transferAndDelFiles() {
-		FTPFile[] fs;
-		List<String> nameList = null;
-		try {
-			ftpClient.changeWorkingDirectory(".");
-		} catch (IOException e) {
-			System.out.println("ftpClient切换账号出错");
-			// e.printStackTrace();
+		// 按日期创建文件夹
+		Date date = new Date();
+		String path = localPath + new SimpleDateFormat("yyyy/MM/dd").format(date);
+		File f = new File(path);
+		if (!f.exists()) {
+			f.mkdirs();
 		}
-
+		nameList = new ArrayList<String>();
+		String tempPath = "";
+		ArrayList<String> pathArray = new ArrayList<String>();
 		try {
-			ftpClient.enterLocalPassiveMode();
-			fs = ftpClient.listFiles();
-			if (fs.length != 0) {
-				nameList = new ArrayList<String>();
-				for (FTPFile ff : fs) {
-					String fileName = new String(ff.getName().getBytes("iso-8859-1"), "GBK");
-					Date date = new Date();
-					String path = localPath + new SimpleDateFormat("yyyy/MM/").format(date);
-					// 如果不存在,创建文件夹
-					File f = new File(path);
-					if (!f.exists()) {
-						f.mkdirs();
-					}
-					if (!ff.isDirectory()) {
-						String fileType = fileName.substring(fileName.lastIndexOf(".") + 1, fileName.length())
-								.toLowerCase();
-						System.out.println("fileType: " + fileType);
-						if (fileType.equals("txt")) {
-							System.out.println("-----传输的文件名称为：" + fileName + "-------------------");
+			getPath(ftpClient, tempPath, pathArray);
+			for (String string : pathArray) {
+				string = new String(string.getBytes("iso-8859-1"), "GBK");
+				ftpClient.changeWorkingDirectory(string);
+				FTPFile[] file = ftpClient.listFiles();
+				if (file.length != 0) {
+					for (FTPFile ftpFile : file) {
+						String originalFileName = new String(ftpFile.getName().getBytes("iso-8859-1"), "GBK");
+						if (!ftpFile.isDirectory()) {
+							String fileName = originalFileName.replace(" ", "-");
+							String fileType = fileName.substring(fileName.lastIndexOf(".") + 1, fileName.length())
+									.toLowerCase();
+							fileName=fileName.substring(0, fileName.length()-3)+fileType;
+							if (fileType.equals("txt")) {
+								nameList.add(path + "/" + fileName);
+								System.out.println("-----传输的文件名称为：" + fileName);
+							}
+							
 							File localFile = new File(path + "/" + fileName);
 							OutputStream is = new FileOutputStream(localFile);
-							ftpClient.retrieveFile(ff.getName(), is);
-							nameList.add(path+ "/" + fileName);
+							ftpClient.retrieveFile(ftpFile.getName(), is);
 							is.close();
-							deleteFile(fileName);
-						} else {
-							System.out.println("-----传输的文件名称为：" + fileName + "-------------------");
-							File localFile = new File(path + "/" + fileName);
-							OutputStream is = new FileOutputStream(localFile);
-							ftpClient.retrieveFile(ff.getName(), is);
-							is.close();
-							deleteFile(fileName);
+							deleteFile(originalFileName);
 						}
-
-					} else {
-						System.out.println("------文件夹目录：" + fileName + "----------------------");
+					}
+				} else {
+					if(string.equals(".")){
+						//System.out.println("Ftp根目录不删除");
+					}else{
+						removeDirectory(string);
 					}
 				}
-			} else {
-				System.out.println("无新的检测数据生成！");
-			}
 
+			}
 		} catch (IOException e) {
-			System.out.println("ftpClient文件传输出错！");
-			// e.printStackTrace();
-		}
-
-		return nameList;
-	}
-
-	public List<String> download(String ftpFile, FTPClient ftp) {
-		List<String> list = new ArrayList<String>();
-		String str = "";
-		InputStream is = null;
-		BufferedReader br = null;
-		try {
-			// 获取ftp上的文件
-			is = ftp.retrieveFileStream(ftpFile);
-			// 转为字节流
-			br = new BufferedReader(new InputStreamReader(is));
-			while ((str = br.readLine()) != null) {
-				list.add(str);
-			}
-			br.close();
-		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return list;
+		return nameList;
 	}
 
 	/**
@@ -250,17 +232,83 @@ public class FtpUtil {
 		}
 	}
 
-	/**
-	 * @param args
-	 * @throws ParseException
-	 */
-	public void main(String[] args) throws ParseException {
-		FtpUtil ftp = new FtpUtil();
+	public void getPath(FTPClient ftp, String path, ArrayList<String> pathArray) throws IOException {
+		FTPFile[] files = ftp.listFiles();
+		for (FTPFile ftpFile : files) {
+			if (ftpFile.getName().equals(".") || ftpFile.getName().equals(".."))
+				continue;
+			if (ftpFile.isDirectory()) {// 如果是目录，则递归调用，查找里面所有文件
+				path += "/" + ftpFile.getName();
+				pathArray.add(path);
+				ftp.changeWorkingDirectory(path);// 改变当前路径
+				getPath(ftp, path, pathArray);// 递归调用
+				path = path.substring(0, path.lastIndexOf("/"));// 避免对之后的同目录下的路径构造作出干扰，
+			}
+		}
+		pathArray.add(".");
+	}
+
+
+	/*
+	public List<String> download(String ftpFile, FTPClient ftp) {
+		List<String> list = new ArrayList<String>();
+		String str = "";
+		InputStream is = null;
+		BufferedReader br = null;
 		try {
-			ftp.transferAndDelFiles();
+			// 获取ftp上的文件
+			is = ftp.retrieveFileStream(ftpFile);
+			// 转为字节流
+			br = new BufferedReader(new InputStreamReader(is));
+			while ((str = br.readLine()) != null) {
+				list.add(str);
+			}
+			br.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		return list;
+	}
+	 
+	public void download(FTPClient ftp, ArrayList<String> pathArray, String localRootPath) throws IOException {
+		for (String string : pathArray) {
+			String localPath = localRootPath + string;
+			File localFile = new File(localPath);
+			if (!localFile.exists()) {
+				localFile.mkdirs();
+			}
+		}
+		for (String string : pathArray) {
+			String localPath = localRootPath + string;// 构造本地路径
+														// ftp.changeWorkingDirectory(string);
+														// FTPFile[] file =
+			ftp.listFiles();
+			for (FTPFile ftpFile : file) {
+				if (ftpFile.getName().equals(".") || ftpFile.getName().equals(".."))
+					continue;
+				File localFile = new File(localPath);
+				if (!ftpFile.isDirectory()) {
+					OutputStream is = new FileOutputStream(localFile + "/" + ftpFile.getName());
+					ftp.retrieveFile(ftpFile.getName(), is);
+					is.close();
+				}
+			}
+		}
+	}
+	*/
+	
+	public void main(String[] args) throws ParseException, Exception {
+		//FtpUtil ftp = new FtpUtil();
+		/*
+		 * try { ftp.transferAndDelFiles(); } catch (Exception e) {
+		 * e.printStackTrace(); }
+		 */
+		String path = "";
+		ArrayList<String> pathArray = new ArrayList<String>();
+		getPath(ftpClient, path, pathArray);
+		System.out.println(pathArray);
+//		download(ftpClient, pathArray, "G:\\ftp1");
+
 	}
 
 }

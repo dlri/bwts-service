@@ -85,27 +85,24 @@
         <aop:advisor advice-ref="txAdvice" pointcut-ref="serviceOperation" />  
     </aop:config>  
     
-    <!-- 任务1配置 -->   
-    <bean id="jobDetail_1" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">  
-        <!-- 执行的类 -->  
+         <!-- 任务jobDetailRunTest配置 -->  
+    <bean id="jobDetailRunTest" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">  
         <property name="targetObject">  
-            <ref bean="job1Demo" />  
+            <ref bean="taskSchedulerRunTest" />  
         </property>  
-        <!-- 类中的方法 -->  
         <property name="targetMethod">  
-            <value>sayHello</value>  
+            <value>taskScheduler</value>  
         </property>  
     </bean>  
-    <bean id="cronTrigger_1" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">  
+    <bean id="cronTriggerRunTest" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">  
         <property name="jobDetail">  
-            <ref bean="jobDetail_1" />  
+            <ref bean="jobDetailRunTest" />  
         </property>  
-        <!-- 每一秒钟执行一次 -->  
         <property name="cronExpression">  
             <value>0/10 * * * * ?</value>  
         </property>  
-    </bean>  
-      
+    </bean>
+    
     <!-- 任务jobDetailRun001配置 -->  
     <bean id="jobDetailRun001" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">  
         <property name="targetObject">  
@@ -141,33 +138,14 @@
         </property>  
     </bean>  
     
-         <!-- 任务jobDetailRun003配置 -->  
-    <bean id="jobDetailRun003" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">  
-        <property name="targetObject">  
-            <ref bean="taskSchedulerRun003" />  
-        </property>  
-        <property name="targetMethod">  
-            <value>taskScheduler</value>  
-        </property>  
-    </bean>  
-    <bean id="cronTriggerRun003" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">  
-        <property name="jobDetail">  
-            <ref bean="jobDetailRun003" />  
-        </property>  
-        <property name="cronExpression">  
-            <value>0/10 * * * * ?</value>  
-        </property>  
-    </bean>  
-      
     <!-- 总配置 -->  
     <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">  
         <!-- 添加触发器 -->  
         <property name="triggers">  
-            <list>  
-               <!--  <ref bean="cronTrigger_1" />  -->
-               <!--  <ref bean="cronTriggerRun001" /> 
-                <ref bean="cronTriggerRun002" />  -->
-                <ref bean="cronTriggerRun003" />  
+            <list>
+            	<ref bean="cronTriggerRunTest" />   
+                <ref bean="cronTriggerRun001" /> 
+                <ref bean="cronTriggerRun002" />  
             </list>  
         </property>  
     </bean>  
