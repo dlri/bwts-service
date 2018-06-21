@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -19,7 +20,7 @@ import com.dlri.chinacnr.bwts.service.DetectionRecordService;
 
 @Service("taskSchedulerRun002")
 public class TaskSchedulerRun002 {
-
+	private static Logger logger = Logger.getLogger(TaskSchedulerRun002.class);  
 	@Autowired
 	DetectionRecordService detectionRecordService;
 	private Properties props;
@@ -35,21 +36,22 @@ public class TaskSchedulerRun002 {
 	}
 
 	public void taskScheduler() {
-		
-		
-			// 连接跑合台FTP服务器，远程传输文件
-			//FtpUtil ftpUtil = new FtpUtil(props.getProperty("ftp_run_002.localpath"), props.getProperty("ftp_run_002.ip"),
-			//		props.getProperty("ftp_run_002.port"), props.getProperty("ftp_run_002.username"), props.getProperty("ftp_run_002.password"));
+		// 连接跑合台FTP服务器，远程传输文件
 		FtpUtil ftpUtil=new FtpUtil();
 		boolean isConnected;
-			isConnected = ftpUtil.connectServer(props.getProperty("ftp_run_002.ip"), props.getProperty("ftp_run_002.port"), props.getProperty("ftp_run_002.username"), props.getProperty("ftp_run_002.password"), props.getProperty("ftp_run_path.defaultPath"));
+			isConnected = ftpUtil.connectServer(
+					props.getProperty("ftp_run_002.ip"),
+					props.getProperty("ftp_run_002.port"),
+					props.getProperty("ftp_run_002.username"), 
+					props.getProperty("ftp_run_002.password"), 
+					props.getProperty("ftp_path.defaultPath"));
 			if(isConnected==true){
 				//在线值为1
 				Util.map.put(props.getProperty("ftp_run_002.equcode"),"1");
-				System.out.println(new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()) + "->编号为:"
+				System.out.println(new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()) +" "+props.getProperty("ftp_run_002.ip")+ "->编号为:"
 						+ props.getProperty("ftp_run_002.equcode") + " 跑合台正在运行!");
+				logger.info(props.getProperty("ftp_run_002.equcode") + " 跑合台正在运行!");
 				List<String> listName = ftpUtil.transferAndDelFiles();
-				System.out.println("======TaskSchedulerRun002====listName.size========="+listName.size());
 				for (String fileName : listName) {
 					Map<String,Object>map=new HashMap<String,Object>();
 					map.put("fileName", fileName);
@@ -67,7 +69,8 @@ public class TaskSchedulerRun002 {
 				}
 			}else{
 				Util.map.put(props.getProperty("ftp_run_002.equcode"),"0");
-				System.out.println(new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()) + "->编号为:"+props.getProperty("ftp_run_002.equcode")+" 跑合台不在线!");
+				System.out.println(new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()) + " "+props.getProperty("ftp_run_002.ip")+"->编号为:"+props.getProperty("ftp_run_002.equcode")+" 跑合台不在线!");
+				logger.info(props.getProperty("ftp_run_002.ip")+" "+props.getProperty("ftp_run_002.equcode") + " 跑合台不在线!");
 			}
 		
 		

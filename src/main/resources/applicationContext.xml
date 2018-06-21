@@ -143,7 +143,7 @@
         <!-- 添加触发器 -->  
         <property name="triggers">  
             <list>
-            	<ref bean="cronTriggerRunTest" />   
+            	<!-- <ref bean="cronTriggerRunTest" />  -->
                 <ref bean="cronTriggerRun001" /> 
                 <ref bean="cronTriggerRun002" />  
             </list>  

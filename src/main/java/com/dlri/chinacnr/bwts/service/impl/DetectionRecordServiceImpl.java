@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -18,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import com.dlri.chinacnr.bwts.dao.DetectionRecordDao;
 import com.dlri.chinacnr.bwts.entity.DetectionRecord;
+import com.dlri.chinacnr.bwts.entity.RecordTotal;
 import com.dlri.chinacnr.bwts.service.DetectionRecordService;
 @Service("detectionRecordService")
 public class DetectionRecordServiceImpl implements DetectionRecordService {
@@ -30,9 +30,7 @@ public class DetectionRecordServiceImpl implements DetectionRecordService {
 		return detectionRecordDao.queryDetectionRecordByCondition(map);
 	}
 
-	public long queryDetectionRecordTotal(Map<String, Object> map) {
-		return detectionRecordDao.queryDetectionRecordTotal(map);
-	}
+	
 
 	public int insertCallProcedureRecord(Map<String, Object> map) {
 		int result=-1;
@@ -110,7 +108,7 @@ public class DetectionRecordServiceImpl implements DetectionRecordService {
 						} catch (ParseException e) {
 							e.printStackTrace();
 						}
-						insertMap.put("tBedType", equType);
+						insertMap.put("channelNum",(line-5));
 						insertMap.put("tBedNum", equCode);
 						insertMap.put("detectionData",detailsStr);
 						result=detectionRecordDao.insertCallProcedureRecord(insertMap);
@@ -131,7 +129,7 @@ public class DetectionRecordServiceImpl implements DetectionRecordService {
 						} catch (ParseException e) {
 							e.printStackTrace();
 						}
-						insertMap.put("tBedType", equType);
+						insertMap.put("channelNum",(line-5));
 						insertMap.put("tBedNum", equCode);
 						insertMap.put("detectionData",detailsStr);
 						result=detectionRecordDao.insertCallProcedureRecord(insertMap);
@@ -165,6 +163,20 @@ public class DetectionRecordServiceImpl implements DetectionRecordService {
 	public String getMonitorValue() {
 		
 		return this.monitorValue;
+	}
+
+
+
+	public RecordTotal queryDetectionRecordTotal(Map<String, Object> map) {
+		RecordTotal total=new RecordTotal();
+		total=detectionRecordDao.queryDetectionRecordTotal(map);
+		return total;
+	}
+
+
+
+	public List<DetectionRecord> queryRecordByLastTime() {
+		return detectionRecordDao.queryRecordByLastTime();
 	}
 
 }

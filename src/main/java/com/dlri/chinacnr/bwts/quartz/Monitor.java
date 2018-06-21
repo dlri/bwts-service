@@ -15,27 +15,28 @@ import com.dlri.chinacnr.bwts.service.impl.ProtocolServiceImpl;
 @Service("monitor")
 public class Monitor implements Runnable {
 
-	ProtocolService protocolService=new ProtocolServiceImpl();
-    public void run() {
-    	String str="";
-    	Iterator<Map.Entry<String,String>> entries = Util.map.entrySet().iterator();  
-    	  
-    	while (entries.hasNext()) {  
-    	 
-       Map.Entry<String,String> entry = entries.next();  
-    	 str+=entry.getKey()+":"+entry.getValue()+",";
-    	  // System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());  
-    }  
+	ProtocolService protocolService = new ProtocolServiceImpl();
 
-    	System.out.println(str+"==============1============"+Util.map.get("RUN001"));
-        WebSocketTest webSocketTest = new WebSocketTest();
-       // webSocketTest.sendMsg("当前时间:" + new Date());
-        webSocketTest.sendMsg(str);
-    }
+	public void run() {
+		String str = "";
+		Iterator<Map.Entry<String, String>> entries = Util.map.entrySet().iterator();
 
-    public void sendMsg() {
-        ScheduledExecutorService newScheduledThreadPool = Executors.newSingleThreadScheduledExecutor();
-        newScheduledThreadPool.scheduleWithFixedDelay(new Monitor(), 20, 5, TimeUnit.SECONDS);
+		while (entries.hasNext()) {
 
-    }
+			Map.Entry<String, String> entry = entries.next();
+			str += entry.getKey() + ":" + entry.getValue() + ",";
+			// System.out.println("Key = " + entry.getKey() + ", Value = " +
+			// entry.getValue());
+		}
+		System.out.println(str + "==============1============" + Util.map.get("RUN001"));
+		WebSocketTest webSocketTest = new WebSocketTest();
+		// webSocketTest.sendMsg("当前时间:" + new Date());
+		webSocketTest.sendMsg(str);
+	}
+
+	public void sendMsg() {
+		ScheduledExecutorService newScheduledThreadPool = Executors.newSingleThreadScheduledExecutor();
+		newScheduledThreadPool.scheduleWithFixedDelay(new Monitor(), 20, 5, TimeUnit.SECONDS);
+
+	}
 }

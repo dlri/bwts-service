@@ -14,6 +14,7 @@ import java.util.List;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
+import org.apache.log4j.Logger;
 
 /**
  * @describe 读取FTP上的文件
@@ -21,7 +22,7 @@ import org.apache.commons.net.ftp.FTPReply;
  * @date 2018-5-22 上午9:16:34
  */
 public class FtpUtil {
-
+	private static Logger logger = Logger.getLogger(FtpUtil.class);  
 	private FTPClient ftpClient = null;
 	private String localPath = null; // 读取文件的存放目录
 	private List<String> nameList;
@@ -82,8 +83,9 @@ public class FtpUtil {
 			System.out.println("==21=====");
 			e.printStackTrace();
 		} catch (SocketException e) {
-			System.out.println("==22=====");
-			e.printStackTrace();
+			System.out.println(host.trim()+" 设备未开机，网络无法连接！");
+			logger.error(host.trim()+" 设备未开机，网络无法连接！");
+			//e.printStackTrace();
 		} catch (IOException e) {
 			// System.out.println("FTP服务器："+host+":"+port+" 连接超时！");
 			// e.printStackTrace();
