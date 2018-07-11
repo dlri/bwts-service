@@ -33,6 +33,7 @@ public class DetectionRecordServiceImpl implements DetectionRecordService {
 	
 
 	public int insertCallProcedureRecord(Map<String, Object> map) {
+		System.out.println("-----------------in-----------");
 		int result=-1;
 		String fileName=(String)map.get("fileName");
 		String equType=(String)map.get("equType");
@@ -111,6 +112,7 @@ public class DetectionRecordServiceImpl implements DetectionRecordService {
 						insertMap.put("channelNum",(line-5));
 						insertMap.put("tBedNum", equCode);
 						insertMap.put("detectionData",detailsStr);
+						
 						result=detectionRecordDao.insertCallProcedureRecord(insertMap);
 						//System.out.println(result+"===="+recordArray[0]+"===="+recordArray[1]+"===="+recordArray[2]+"===="+recordArray[3]+"===="+recordArray[4]);
 					}else if(recordArray.length==3){

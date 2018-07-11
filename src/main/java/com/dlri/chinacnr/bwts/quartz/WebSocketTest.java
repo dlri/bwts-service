@@ -13,7 +13,7 @@ import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 
-import com.dlri.chinacnr.bwts.manager.Util;
+import com.dlri.chinacnr.bwts.manager.OnlineState;
 
 /**
  * @ServerEndpoint 注解是一个类层次的注解，它的功能主要是将目前的类定义成一个websocket服务器端,
@@ -42,12 +42,11 @@ public class WebSocketTest {
         webSocketSet.add(this);     //加入set中
         addOnlineCount();           //在线数加1
         System.out.println("有新连接加入！当前在线人数为" + getOnlineCount());
-       // sendMsg2();
+        //设备是否在线监测
+        monitorOnLineStatus();
     }
-   
-	
-    public void sendMsg2() {
-    	Util util=Util.getInstance();
+    public void monitorOnLineStatus() {
+    	OnlineState util=OnlineState.getInstance();
         ScheduledExecutorService newScheduledThreadPool = Executors.newSingleThreadScheduledExecutor();
         newScheduledThreadPool.scheduleWithFixedDelay(new Monitor(), 10, 10, TimeUnit.SECONDS);
 

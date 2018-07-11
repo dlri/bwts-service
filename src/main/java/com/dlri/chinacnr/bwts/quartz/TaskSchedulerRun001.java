@@ -15,7 +15,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
 import org.springframework.stereotype.Service;
 
-import com.dlri.chinacnr.bwts.manager.Util;
+import com.dlri.chinacnr.bwts.manager.OnlineState;
 import com.dlri.chinacnr.bwts.service.DetectionRecordService;
 
 @Service("taskSchedulerRun001")
@@ -46,7 +46,7 @@ public class TaskSchedulerRun001 {
 				props.getProperty("ftp_path.defaultPath"));
 		if (isConnected == true) {
 			//在线值为1
-			Util.map.put(props.getProperty("ftp_run_001.equcode"),"1");
+			OnlineState.map.put(props.getProperty("ftp_run_001.equcode"),"1");
 			System.out.println(new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()) + " "+props.getProperty("ftp_run_001.ip")+"->编号为:"
 					+ props.getProperty("ftp_run_001.equcode") + " 跑合台正在运行!");
 			List<String> listName = ftpUtil.transferAndDelFiles();
@@ -66,7 +66,7 @@ public class TaskSchedulerRun001 {
 				}
 			}
 		} else {
-			Util.map.put(props.getProperty("ftp_run_001.equcode"),"0");
+			OnlineState.map.put(props.getProperty("ftp_run_001.equcode"),"0");
 			System.out.println(new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()) +" "+props.getProperty("ftp_run_001.ip")+ "->编号为:"
 					+ props.getProperty("ftp_run_001.equcode") + " 跑合台不在线!");
 			logger.info(props.getProperty("ftp_run_001.ip")+" "+props.getProperty("ftp_run_001.equcode") + " 跑合台不在线!");

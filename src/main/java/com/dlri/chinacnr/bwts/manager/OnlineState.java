@@ -3,15 +3,15 @@ package com.dlri.chinacnr.bwts.manager;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Util {
+public class OnlineState {
 	public static Map <String,String> map=new HashMap<String,String>();
 	//懒汉式单例类.在第一次调用的时候实例化自己 
-	    private Util() {}
-	    private static Util single=null;
+	    private OnlineState() {}
+	    private static OnlineState single=null;
 	    //静态工厂方法 
-	    public static Util getInstance() {
+	    public static OnlineState getInstance() {
 	         if (single == null) {  
-	             single = new Util();
+	             single = new OnlineState();
 	           //  map.put("RUN001", "0");
 	             map.put("RUN002", "0");
 	             map.put("RUN003", "0");
@@ -36,10 +36,7 @@ public class Util {
 	             map.put("WASH002", "0");
 	             map.put("WASH003", "0");
 	             map.put("WASH004", "0");
-	             
-	             System.out.println("==============2============"+Util.map.size());
-	             
-	             
+	             System.out.println("设备在线状态个数："+OnlineState.map.size());
 	         }  
 	        return single;
 	    }

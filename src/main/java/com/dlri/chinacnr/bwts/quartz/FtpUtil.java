@@ -1,5 +1,6 @@
 package com.dlri.chinacnr.bwts.quartz;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -22,7 +23,7 @@ import org.apache.log4j.Logger;
  * @date 2018-5-22 上午9:16:34
  */
 public class FtpUtil {
-	private static Logger logger = Logger.getLogger(FtpUtil.class);  
+	private static Logger logger = Logger.getLogger(FtpUtil.class);
 	private FTPClient ftpClient = null;
 	private String localPath = null; // 读取文件的存放目录
 	private List<String> nameList;
@@ -38,29 +39,26 @@ public class FtpUtil {
 	 * @param userPwd
 	 * @throws SocketException
 	 * @throws IOException
-	 * function:连接到服务器
+	 *             function:连接到服务器
 	 */
 	public FtpUtil(String localPath, String ip, String port, String userName, String userPwd) {
-		// this.localPath=localPath;
 		ftpClient = new FTPClient();
 		try {
 			// 连接
-			// System.out.println("连接======用户信息======"+userName+"======"+userPwd+"==="+ip+"==="+port);
 			// ftpClient.setControlEncoding("GBK");// 设置登陆编码格式
 			// ftpClient.setConnectTimeout(60000);// 超时60秒
 			ftpClient.connect(ip.trim(), Integer.parseInt(port));
+			// 登录
+			ftpClient.login(userName, userPwd);
 			int reply = ftpClient.getReplyCode();
 			if (!FTPReply.isPositiveCompletion(reply)) {
-				// this.closeServer();
+				ftpClient.disconnect();
 				try {
 					throw new Exception("FTP  refuse connect");
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
-			// 登录
-
-			ftpClient.login(userName, userPwd);
 		} catch (SocketException e) {
 			System.out.println("--->FTP连接超时！");
 			// e.printStackTrace();
@@ -83,9 +81,9 @@ public class FtpUtil {
 			System.out.println("==21=====");
 			e.printStackTrace();
 		} catch (SocketException e) {
-			System.out.println(host.trim()+" 设备未开机，网络无法连接！");
-			logger.error(host.trim()+" 设备未开机，网络无法连接！");
-			//e.printStackTrace();
+			System.out.println(host.trim() + " 设备未开机，网络无法连接！");
+			logger.error(host.trim() + " 设备未开机，网络无法连接！");
+			// e.printStackTrace();
 		} catch (IOException e) {
 			// System.out.println("FTP服务器："+host+":"+port+" 连接超时！");
 			// e.printStackTrace();
@@ -99,6 +97,7 @@ public class FtpUtil {
 					if (defaultPath != null && defaultPath.length() != 0) {
 						ftpClient.changeWorkingDirectory(defaultPath);
 					}
+
 					return true;
 				}
 			} catch (IOException e) {
@@ -182,24 +181,40 @@ public class FtpUtil {
 							String fileName = originalFileName.replace(" ", "-");
 							String fileType = fileName.substring(fileName.lastIndexOf(".") + 1, fileName.length())
 									.toLowerCase();
-							fileName=fileName.substring(0, fileName.length()-3)+fileType;
+							fileName = fileName.substring(0, fileName.length() - 3) + fileType;
 							if (fileType.equals("txt")) {
 								nameList.add(path + "/" + fileName);
 								System.out.println("-----传输的文件名称为：" + fileName);
 							}
-							
+
 							File localFile = new File(path + "/" + fileName);
-							OutputStream is = new FileOutputStream(localFile);
-							ftpClient.retrieveFile(ftpFile.getName(), is);
-							is.close();
-							deleteFile(originalFileName);
+							// OutputStream is = new
+							// FileOutputStream(localFile);
+							// ftpClient.retrieveFile(ftpFile.getName(), is);
+							// is.close();
+
+							if (fileType.equals("txt") || fileType.equals("pdf") || fileType.equals("bgm")) {
+								OutputStream out = new BufferedOutputStream(new FileOutputStream(localFile));
+								if (!ftpClient.retrieveFile(ftpFile.getName(), out)) {
+									throw new IOException("Error loading file " + ftpFile.getName()
+											+ " from FTP server. Check FTP permissions and path.");
+								}
+								out.flush();
+								if (out != null) {
+									try {
+										out.close();
+									} catch (IOException ex) {
+									}
+								}
+								deleteFile(originalFileName);
+							}
 						}
 					}
 				} else {
-					if(string.equals(".")){
-						//System.out.println("Ftp根目录不删除");
-					}else{
-						removeDirectory(string);
+					if (string.equals(".")) {
+						// System.out.println("Ftp根目录不删除");
+					} else {
+						// removeDirectory(string);
 					}
 				}
 
@@ -207,6 +222,7 @@ public class FtpUtil {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		closeServer();
 		return nameList;
 	}
 
@@ -250,57 +266,31 @@ public class FtpUtil {
 		pathArray.add(".");
 	}
 
-
 	/*
-	public List<String> download(String ftpFile, FTPClient ftp) {
-		List<String> list = new ArrayList<String>();
-		String str = "";
-		InputStream is = null;
-		BufferedReader br = null;
-		try {
-			// 获取ftp上的文件
-			is = ftp.retrieveFileStream(ftpFile);
-			// 转为字节流
-			br = new BufferedReader(new InputStreamReader(is));
-			while ((str = br.readLine()) != null) {
-				list.add(str);
-			}
-			br.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return list;
-	}
-	 
-	public void download(FTPClient ftp, ArrayList<String> pathArray, String localRootPath) throws IOException {
-		for (String string : pathArray) {
-			String localPath = localRootPath + string;
-			File localFile = new File(localPath);
-			if (!localFile.exists()) {
-				localFile.mkdirs();
-			}
-		}
-		for (String string : pathArray) {
-			String localPath = localRootPath + string;// 构造本地路径
-														// ftp.changeWorkingDirectory(string);
-														// FTPFile[] file =
-			ftp.listFiles();
-			for (FTPFile ftpFile : file) {
-				if (ftpFile.getName().equals(".") || ftpFile.getName().equals(".."))
-					continue;
-				File localFile = new File(localPath);
-				if (!ftpFile.isDirectory()) {
-					OutputStream is = new FileOutputStream(localFile + "/" + ftpFile.getName());
-					ftp.retrieveFile(ftpFile.getName(), is);
-					is.close();
-				}
-			}
-		}
-	}
-	*/
-	
+	 * public List<String> download(String ftpFile, FTPClient ftp) {
+	 * List<String> list = new ArrayList<String>(); String str = ""; InputStream
+	 * is = null; BufferedReader br = null; try { // 获取ftp上的文件 is =
+	 * ftp.retrieveFileStream(ftpFile); // 转为字节流 br = new BufferedReader(new
+	 * InputStreamReader(is)); while ((str = br.readLine()) != null) {
+	 * list.add(str); } br.close(); } catch (Exception e) { e.printStackTrace();
+	 * } return list; }
+	 * 
+	 * public void download(FTPClient ftp, ArrayList<String> pathArray, String
+	 * localRootPath) throws IOException { for (String string : pathArray) {
+	 * String localPath = localRootPath + string; File localFile = new
+	 * File(localPath); if (!localFile.exists()) { localFile.mkdirs(); } } for
+	 * (String string : pathArray) { String localPath = localRootPath +
+	 * string;// 构造本地路径 // ftp.changeWorkingDirectory(string); // FTPFile[] file
+	 * = ftp.listFiles(); for (FTPFile ftpFile : file) { if
+	 * (ftpFile.getName().equals(".") || ftpFile.getName().equals(".."))
+	 * continue; File localFile = new File(localPath); if
+	 * (!ftpFile.isDirectory()) { OutputStream is = new
+	 * FileOutputStream(localFile + "/" + ftpFile.getName());
+	 * ftp.retrieveFile(ftpFile.getName(), is); is.close(); } } } }
+	 */
+
 	public void main(String[] args) throws ParseException, Exception {
-		//FtpUtil ftp = new FtpUtil();
+		// FtpUtil ftp = new FtpUtil();
 		/*
 		 * try { ftp.transferAndDelFiles(); } catch (Exception e) {
 		 * e.printStackTrace(); }
@@ -309,7 +299,7 @@ public class FtpUtil {
 		ArrayList<String> pathArray = new ArrayList<String>();
 		getPath(ftpClient, path, pathArray);
 		System.out.println(pathArray);
-//		download(ftpClient, pathArray, "G:\\ftp1");
+		// download(ftpClient, pathArray, "G:\\ftp1");
 
 	}
 
