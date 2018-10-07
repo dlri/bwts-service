@@ -5,4 +5,6 @@ import com.dlri.chinacnr.bwts.entity.User;
 public interface UserService {
 
 	public User login(User user);
+	
+	public User getUserInfo(long id);
 }

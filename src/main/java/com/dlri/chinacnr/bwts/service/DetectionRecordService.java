@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.dlri.chinacnr.bwts.entity.DetectionRecord;
 import com.dlri.chinacnr.bwts.entity.RecordTotal;
+import com.dlri.chinacnr.bwts.entity.Statistical;
 
 public interface DetectionRecordService {
 	
@@ -18,4 +19,6 @@ public interface DetectionRecordService {
 	public String getMonitorValue();
 	
 	public List<DetectionRecord> queryRecordByLastTime();
+	
+	public List<Statistical> queryStatistialRecordByCondition(Map<String,Object> map);
 }

@@ -17,7 +17,7 @@ public class Monitor implements Runnable {
 	ProtocolService protocolService = new ProtocolServiceImpl();
 	public void run() {
 		String str = "";
-		Iterator<Map.Entry<String, String>> entries = OnlineState.map.entrySet().iterator();
+		Iterator<Map.Entry<String, String>> entries =com.dlri.chinacnr.bwts.manager.OnlineState.map.entrySet().iterator();
 		while (entries.hasNext()) {
 			Map.Entry<String, String> entry = entries.next();
 			str += entry.getKey() + ":" + entry.getValue() + ",";

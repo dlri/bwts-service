@@ -18,4 +18,8 @@ public class UserServiceImpl implements UserService {
 		return userDao.login(user);
 	}
 
+	public User getUserInfo(long id) {
+		return userDao.getUserInfo(id);
+	}
+
 }
