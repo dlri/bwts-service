@@ -3,7 +3,7 @@ package com.dlri.chinacnr.bwts.manager;
 import java.util.HashMap;
 import java.util.Map;
 
-public  class OnlineState {
+public class OnlineState {
 	public static Map <String,String> map=new HashMap<String,String>();
 	//懒汉式单例类.在第一次调用的时候实例化自己 
 	    private OnlineState() {}
@@ -12,7 +12,7 @@ public  class OnlineState {
 	    public static OnlineState getInstance() {
 	         if (single == null) {  
 	             single = new OnlineState();
-	             map.put("RUN001", "0");
+	           //  map.put("RUN001", "0");
 	             map.put("RUN002", "0");
 	             map.put("RUN003", "0");
 	             map.put("RUN004", "0");

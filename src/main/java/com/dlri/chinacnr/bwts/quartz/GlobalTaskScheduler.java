@@ -57,10 +57,10 @@ public class GlobalTaskScheduler {
 				// 按新的cronExpression表达式构建一个新的trigger
 				trigger = TriggerBuilder.newTrigger().withIdentity(scheduleJob.getJobName(), scheduleJob.getJobGroup())
 						.withSchedule(scheduleBuilder).build();
-				System.out.println("===============new============"+scheduleJob.getJobName()+"=="+scheduleJob.getJobGroup()+"=="+scheduleJob.getFtpPassword()+"=="+scheduleJob.getFtpIp());
+				//System.out.println("===============new============"+scheduleJob.getJobName()+"=="+scheduleJob.getJobGroup()+"=="+scheduleJob.getFtpPassword());
 				scheduler.scheduleJob(jobDetail, trigger);
 			} else {
-				System.out.println("==============yyyy============"+scheduleJob.getJobName()+"=="+scheduleJob.getJobGroup()+"=="+scheduleJob.getFtpPassword()+"=="+scheduleJob.getFtpIp());
+				//System.out.println("==============yyyy============"+scheduleJob.getJobName()+"=="+scheduleJob.getJobGroup()+"=="+scheduleJob.getFtpPassword());
 				// Trigger已存在，那么更新相应的定时设置
 				// 表达式调度构建器
 				CronScheduleBuilder scheduleBuilder = CronScheduleBuilder.cronSchedule(scheduleJob.getCronExpression());

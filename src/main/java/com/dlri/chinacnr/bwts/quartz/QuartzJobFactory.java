@@ -49,7 +49,7 @@ public class QuartzJobFactory implements Job {
 			FtpUtil ftpUtil = new FtpUtil();
 			boolean isConnected;
 			isConnected = ftpUtil.connectServer(ftpIP, ftpPort,ftpName,ftpPassword,serverPath);
-			System.out.println("读取到的机位上FTP配置信息："+isConnected+"==="+ftpIP+"=="+ftpName+"==="+ftpPassword);
+			//System.out.println("读取到的机位上FTP配置信息："+isConnected+"==="+ftpIP+"=="+ftpName+"==="+ftpPassword);
 			if (isConnected == true) {
 				//在线值为1
 				OnlineState.map.put(jobName,"1");

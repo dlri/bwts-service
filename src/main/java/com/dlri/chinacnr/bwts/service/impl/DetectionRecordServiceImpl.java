@@ -34,37 +34,35 @@ public class DetectionRecordServiceImpl implements DetectionRecordService {
 	
 
 	public int insertCallProcedureRecord(Map<String, Object> map) {
-		String strGearboxNog="";
-		String strGearboxNop="";
-		String strBearingNo="";
-		System.out.println("-----------------in-----------");
-		int result=-1;
-		String fileName=(String)map.get("fileName");
-		String equType=(String)map.get("equType");
-		String equCode=(String)map.get("equCode");
-		Map<String, Object> insertMap=new HashMap<String,Object>();
+		String strGearboxNog = "";// 轴承型号(G)
+		String strGearboxNop = "";// 轴承型号(P)
+		String strBearingNo = "";// AB侧轴箱轴承型号
+		int result = -1;// 返回值，初始为-1；
+		String fileName = (String) map.get("fileName");// TXT的文件名称
+		String equType = (String) map.get("equType");
+		String equCode = (String) map.get("equCode");
+		Map<String, Object> insertMap = new HashMap<String, Object>();
 		String fileType = fileName.substring(fileName.lastIndexOf(".") + 1, fileName.length()).toLowerCase();
-		if(fileType.equals("txt")){
-			monitorValue="";
-			monitorValue += "'"+equType+"',";//添加设备类型
-			monitorValue += "'"+equCode+"',";//添加同一类型设备的编码
-			String testHead=""; //检测的前5个头部信息
-			String testValue="";//检测的值
-			String recordStr="";
-			String detailsStr="";
+		if (fileType.equals("txt")) {
+			monitorValue = "";
+			monitorValue += "'" + equType + "',";// 添加设备类型
+			monitorValue += "'" + equCode + "',";// 添加同一类型设备的编码
+			String testHead = ""; // 检测的头部信息
+			String testValue = "";// 检测的值
+			String recordStr = ""; // TXT文件中的前4行公共信息，共10个变量内容
+			String detailsStr = "";// TXT文件中的检测值记录信息，4条或8条
 			File file = new File(fileName);
-			String txtName=fileName.substring(fileName.lastIndexOf("/") + 1, fileName.length());
-			//monitorValue += "'"+txtName+"'";//添加文件名称
+			String txtName = fileName.substring(fileName.lastIndexOf("/") + 1, fileName.length());
 			if (file.isFile() && file.exists()) {
 				BufferedReader reader = null;
 				try {
-					String strName=txtName.substring(0, txtName.length()-4);
+					String strName = txtName.substring(0, txtName.length() - 4);
 					java.util.Date date = new java.util.Date();
 					String path = new SimpleDateFormat("yyyy/MM/dd").format(date);
 					insertMap.put("savePath", path);
-					insertMap.put("pdfFile", strName+".pdf");
-					insertMap.put("bgmFile", strName+".bgm");
-					System.out.println("以行为单位读取文件内容，一次读一整行：");
+					insertMap.put("pdfFile", strName + ".pdf");
+					insertMap.put("bgmFile", strName + ".bgm");
+					// System.out.println("以行为单位读取文件内容，一次读一整行：");
 					InputStreamReader read = new InputStreamReader(new FileInputStream(file), "gbk");
 					reader = new BufferedReader(read);
 					String tempString = null;
@@ -77,106 +75,84 @@ public class DetectionRecordServiceImpl implements DetectionRecordService {
 							for (String element : arrayStr) {
 								String[] line1 = element.split("：");
 								recordStr += line1[1] + ",";
-								//testValue+="'"+line1[1]+"',";
 							}
 						} else if (line > 6) {
-							//String str = tempString.replace(":", "-");
 							arrayStr = tempString.split("	");
-							//判断轴箱编号
-							if(line==8){
-								strGearboxNog=arrayStr[2];
+							// 判断轴箱编号
+							if (line == 8) {
+								strGearboxNog = arrayStr[2];
 							}
-							if(line==10){
-								if(strGearboxNog.equals(arrayStr[2])){
-									strBearingNo=arrayStr[2];
-								}else{
-									strGearboxNop=arrayStr[2];
+							if (line == 10) {
+								if (strGearboxNog.equals(arrayStr[2])) {
+									strBearingNo = arrayStr[2];
+								} else {
+									strGearboxNop = arrayStr[2];
+									strBearingNo = "无";
+									// System.out.println("无AB侧轴箱轴承型号！");
 								}
 							}
-							if(line==12){
-								strGearboxNog=arrayStr[2];
+							if (line == 12) {
+								strGearboxNog = arrayStr[2];
 							}
-							if(line==14){
-								strGearboxNop=arrayStr[2];
+							if (line == 14) {
+								strGearboxNop = arrayStr[2];
 							}
 							for (String element : arrayStr) {
-								//System.out.println(element.+"===============================");
+								// System.out.println(element.+"===============================");
 								detailsStr += element + ",";
-								testValue+="'"+element+"',";
+								testValue += "'" + element + "',";
 							}
 							// 合格的数据长度是8，不合格的是9，8的情况要补一列
-							if(arrayStr.length==8){
+							if (arrayStr.length == 8) {
 								detailsStr += "无,";
-								testValue+="'',";
+								testValue += "'',";
 							}
 						}
 						line++;
 					}
 					read.close();
 					reader.close();
-					String[] recordArray =recordStr.split(",");
-					if(recordArray.length==10){
-						//old-[0轮对编号,1修程,2A侧轴承编号,3B侧轴承编号,4检测时间]
-						//new-[0车间,1机位,2设备,3轮对编号,4齿轮箱编号,5修程,6A侧轴承编号,7B侧轴承编号,8检测时间,9检验员,]
-						//[B04,R01,齿轮箱跑合台,QWSE34,J43056,三级,12DE34,456321,20171115010248,张三,]
-						testHead+="'"+recordArray[3]+"',";
-						testHead+="'"+recordArray[5]+"',";
-						testHead+="'"+recordArray[6]+"',";
-						testHead+="'"+recordArray[7]+"',";
-						testHead+="'"+recordArray[8]+"',";
+
+					String[] recordArray = recordStr.split(",");
+					if (recordArray.length == 10) {
+						// recordArray=[0车间，1机位，2设备，3轮对编号，4齿轮箱编号，5修程，6A侧轴承编号，7B侧轴承编号，8检测时间，9检验员，]
+						// recordArray=[B04,R01，齿轮箱跑合台，QWSE34,J43056，三级，12DE34,456321,20171115010248，张三，]
+						testHead += "'" + recordArray[3] + "',";
+						testHead += "'" + recordArray[5] + "',";
+						testHead += "'" + recordArray[6] + "',";
+						testHead += "'" + recordArray[7] + "',";
+						testHead += "'" + recordArray[8] + "',";
 						insertMap.put("wheelId", recordArray[3]);
 						insertMap.put("repairRank", recordArray[5]);
 						insertMap.put("aBearingNum", recordArray[6]);
 						insertMap.put("bBearingNum", recordArray[7]);
-						DateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss"); 
+						DateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 						try {
 							insertMap.put("detectionTime", sdf.parse(recordArray[8].toString()));
 						} catch (ParseException e) {
 							e.printStackTrace();
 						}
-						insertMap.put("channelNum",(line-7));
+						insertMap.put("channelNum", (line - 7));
 						insertMap.put("tBedNum", equCode);
-						insertMap.put("workShop", recordArray[0]);//车间
-						insertMap.put("placement", recordArray[1]);//机位
-						insertMap.put("equipment", recordArray[2]);//设备
-						insertMap.put("checker", recordArray[9]);//检验员
-						insertMap.put("gearboxNum", recordArray[4]);//齿轮箱编号
-						insertMap.put("gearboxNog", strGearboxNog);//齿轮箱型号(G)
-						insertMap.put("gearboxNop", strGearboxNop);//齿轮箱型号(P)
-						insertMap.put("bearingNod", strBearingNo);//轴箱型号
-						insertMap.put("detectionData",detailsStr);
-						System.out.println(strBearingNo+"==========================================");
-						result=detectionRecordDao.insertCallProcedureRecord(insertMap);
-						//System.out.println(result+"===="+recordArray[0]+"===="+recordArray[1]+"===="+recordArray[2]+"===="+recordArray[3]+"===="+recordArray[4]);
-					}else if(recordArray.length==3){
-						System.out.println("=================跳的不正确了！=========================");
-						testHead+="'"+recordArray[0]+"',";
-						testHead+="'"+recordArray[1]+"',";
-						testHead+="'',";
-						testHead+="'',";
-						testHead+="'"+recordArray[2]+"',";
-						insertMap.put("wheelId", recordArray[0]);
-						insertMap.put("repairRank", recordArray[1]);
-						insertMap.put("aBearingNum", "");
-						insertMap.put("bBearingNum", "");
-						DateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss"); 
-						try {
-							insertMap.put("detectionTime", sdf.parse(recordArray[2].toString()));
-						} catch (ParseException e) {
-							e.printStackTrace();
-						}
-						insertMap.put("channelNum",(line-5));
-						insertMap.put("tBedNum", equCode);
-						insertMap.put("detectionData",detailsStr);
-						result=detectionRecordDao.insertCallProcedureRecord(insertMap);
+						insertMap.put("workShop", recordArray[0]);// 车间
+						insertMap.put("placement", recordArray[1]);// 机位
+						insertMap.put("equipment", recordArray[2]);// 设备
+						insertMap.put("checker", recordArray[9]);// 检验员
+						insertMap.put("gearboxNum", recordArray[4]);// 齿轮箱编号
+						insertMap.put("gearboxNog", strGearboxNog);// 齿轮箱型号(G)
+						insertMap.put("gearboxNop", strGearboxNop);// 齿轮箱型号(P)
+						insertMap.put("bearingNod", strBearingNo);// 轴箱型号
+						insertMap.put("detectionData", detailsStr);
+						result = detectionRecordDao.insertCallProcedureRecord(insertMap);
+						monitorValue += "'" + (line - 7) + "',";// 检测值行数
+						monitorValue += testHead;
+						monitorValue += testValue;
+						// System.out.println("推送到首页面的实时监测数据: "+monitorValue);
+						// System.out.println("TXT文件中的前4行公共信息:" +
+						// recordStr+"\nTXT文件中的检测值记录信息:"+detailsStr);
+					} else {
+						System.out.println("警告：TXT文件中的前4行公共信息格式不正确，无法入库！");
 					}
-					
-					monitorValue += "'"+(line-7)+"',";//检测值行数
-					monitorValue +=testHead;
-					monitorValue+=testValue;
-					System.out.println("DetectionRecordServiceImpl is monitorValue: "+monitorValue);
-					System.out.println("recordStr is:===" + recordStr+"\n detailsStr is:"+detailsStr);
-					
 				} catch (IOException e) {
 					e.printStackTrace();
 				} finally {
@@ -188,10 +164,9 @@ public class DetectionRecordServiceImpl implements DetectionRecordService {
 					}
 				}
 			}
-			System.out.println(result+"fileType:"+fileType);
 			return result;
-		}else{
-			System.out.println(result+"fileType:"+fileType);
+		} else {
+			System.out.println(result + "不是TXT文件类型，其类型为" + fileType);
 			return result;
 		}
 	}
