@@ -7,9 +7,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.SocketException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.net.ftp.FTPClient;
@@ -25,7 +23,6 @@ import org.apache.log4j.Logger;
 public class FtpUtil {
 	private static Logger logger = Logger.getLogger(FtpUtil.class);
 	private FTPClient ftpClient = null;
-	private String localPath = null; // 读取文件的存放目录
 	private List<String> nameList;
 
 	public FtpUtil() {
@@ -41,6 +38,7 @@ public class FtpUtil {
 	 * @throws IOException
 	 *             function:连接到服务器
 	 */
+	/*
 	public FtpUtil(String localPath, String ip, String port, String userName, String userPwd) {
 		ftpClient = new FTPClient();
 		try {
@@ -67,22 +65,21 @@ public class FtpUtil {
 			System.out.println("IP 错误！");
 		}
 	}
+	*/
 
 	// String localPath,String ip, String port, String userName, String userPwd
 	public boolean connectServer(String host, String port, String user, String password, String defaultPath) {
-		localPath = defaultPath;
 		ftpClient = new FTPClient();
-		ftpClient.setDataTimeout(5000);
-		ftpClient.setConnectTimeout(60);
-		// ftpClient.setControlEncoding("UTF-8");
+		ftpClient.setDataTimeout(120000);
+		ftpClient.setConnectTimeout(60000);
 		try {
 			ftpClient.connect(host.trim(), Integer.parseInt(port));
 		} catch (NumberFormatException e) {
-			System.out.println("==21=====");
 			e.printStackTrace();
 		} catch (SocketException e) {
+			closeServer();
 			System.out.println(host.trim() + " 设备未开机，网络无法连接！");
-			logger.error(host.trim() + " 设备未开机，网络无法连接！");
+			//logger.error(host.trim() + " 设备未开机，网络无法连接！");
 			// e.printStackTrace();
 		} catch (IOException e) {
 			// System.out.println("FTP服务器："+host+":"+port+" 连接超时！");
@@ -157,14 +154,8 @@ public class FtpUtil {
 	 * @return
 	 * @throws IOException
 	 */
-	public List<String> transferAndDelFiles() {
-		// 按日期创建文件夹
-		Date date = new Date();
-		String path = localPath + new SimpleDateFormat("yyyy/MM/dd").format(date);
-		File f = new File(path);
-		if (!f.exists()) {
-			f.mkdirs();
-		}
+	public List<String> transferAndDelFiles(String jobName,String path) {
+		
 		nameList = new ArrayList<String>();
 		String tempPath = "";
 		ArrayList<String> pathArray = new ArrayList<String>();
@@ -184,20 +175,18 @@ public class FtpUtil {
 							fileName = fileName.substring(0, fileName.length() - 3) + fileType;
 							if (fileType.equals("txt")) {
 								nameList.add(path + "/" + fileName);
-								System.out.println("-----传输的文件名称为：" + fileName);
+								//System.out.println("-----传输的文件名称为：" + fileName);
 							}
 
 							File localFile = new File(path + "/" + fileName);
-							// OutputStream is = new
-							// FileOutputStream(localFile);
-							// ftpClient.retrieveFile(ftpFile.getName(), is);
-							// is.close();
 
 							if (fileType.equals("txt") || fileType.equals("pdf") || fileType.equals("bgm")) {
+								// 被动模式发起，穿透防火墙
+								ftpClient.enterLocalPassiveMode();
 								OutputStream out = new BufferedOutputStream(new FileOutputStream(localFile));
 								if (!ftpClient.retrieveFile(ftpFile.getName(), out)) {
-									throw new IOException("Error loading file " + ftpFile.getName()
-											+ " from FTP server. Check FTP permissions and path.");
+									throw new IOException( ftpFile.getName()
+											+ "  文件加错误，. 检查服务器权限、名称及路径。");
 								}
 								out.flush();
 								if (out != null) {

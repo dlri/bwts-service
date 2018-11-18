@@ -8,12 +8,14 @@ import java.io.InputStreamReader;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.dlri.chinacnr.bwts.dao.DetectionRecordDao;
 import com.dlri.chinacnr.bwts.entity.DetectionRecord;
@@ -32,7 +34,7 @@ public class DetectionRecordServiceImpl implements DetectionRecordService {
 	}
 
 	
-
+	@Transactional
 	public int insertCallProcedureRecord(Map<String, Object> map) {
 		String strGearboxNog = "";// 轴承型号(G)
 		String strGearboxNop = "";// 轴承型号(P)
@@ -74,7 +76,12 @@ public class DetectionRecordServiceImpl implements DetectionRecordService {
 							arrayStr = tempString.split("	");
 							for (String element : arrayStr) {
 								String[] line1 = element.split("：");
-								recordStr += line1[1] + ",";
+								if(line1.length==1) {
+									recordStr += "无,";
+								}else {
+									recordStr += line1[1] + ",";
+								}
+								
 							}
 						} else if (line > 6) {
 							arrayStr = tempString.split("	");
@@ -148,8 +155,8 @@ public class DetectionRecordServiceImpl implements DetectionRecordService {
 						monitorValue += testHead;
 						monitorValue += testValue;
 						// System.out.println("推送到首页面的实时监测数据: "+monitorValue);
-						// System.out.println("TXT文件中的前4行公共信息:" +
-						// recordStr+"\nTXT文件中的检测值记录信息:"+detailsStr);
+						 System.out.println("TXT文件中的前4行公共信息:" +
+						recordStr+"\nTXT文件中的检测值记录信息:"+detailsStr);
 					} else {
 						System.out.println("警告：TXT文件中的前4行公共信息格式不正确，无法入库！");
 					}
@@ -172,7 +179,7 @@ public class DetectionRecordServiceImpl implements DetectionRecordService {
 	}
 	
 	public String getMonitorValue() {
-		
+		System.out.println("["+new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date())+"] 向前台推送数据成功！");
 		return this.monitorValue;
 	}
 

@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.dlri.chinacnr.bwts</groupId>
 		<artifactId>bwts-parent</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
+		<version>1.0.0-RELEASE</version>
 		<relativePath>../bwts-parent/pom.xml</relativePath>
 	</parent>
 	<artifactId>bwts-service</artifactId>
@@ -79,7 +79,7 @@
 		<dependency>
 			<groupId>com.dlri.chinacnr.bwts</groupId>
 			<artifactId>bwts-dao</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>1.0.0-RELEASE</version>
 		</dependency>
 		
 	</dependencies>
